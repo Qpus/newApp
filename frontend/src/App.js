@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
+import "./App.css";
 
 function App() {
   const [inputValue, setInputValue] = useState("");
@@ -34,6 +35,17 @@ function App() {
     }
   };
 
+  const handleDelete = (id) => {
+    fetch(`http://107.20.129.158:3000/delete/${id}`, {
+      method: "DELETE",
+    })
+      .then(() => {
+        // Update state to remove the deleted item from the list
+        setSavedItems(savedItems.filter((item) => item.id !== id));
+      })
+      .catch((error) => console.error("Error deleting item:", error));
+  };
+
   return (
     <div className="App">
       <h1>React Save and Read App</h1>
@@ -48,9 +60,13 @@ function App() {
 
       <h2>Saved Items</h2>
       <ul>
-        {savedItems.map((item, index) => (
-          <li key={index}>{item}</li>
-        ))}
+        {savedItems &&
+          savedItems.map((item) => (
+            <li key={item.id}>
+              {item.item}
+              <button onClick={() => handleDelete(item.id)}>Delete</button>
+            </li>
+          ))}
       </ul>
     </div>
   );

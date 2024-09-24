@@ -6,15 +6,13 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Configure the PostgreSQL connection
 const pool = new Pool({
-  user: process.env.DB_USER, // RDS master username
-  host: "mylist.ckoda7e9oezp.us-east-1.rds.amazonaws.com", // RDS endpoint
-  database: "list", // Your PostgreSQL database name
-  password: process.env.DB_PASSWORD, // RDS master password
-  port: 5432, // PostgreSQL port
+  user: process.env.DB_USER,
+  host: process.env.DB_HOST,
+  database: process.env.DB_NAME,
+  password: process.env.DB_PASSWORD,
+  port: 5432,
 });
-
 // Create table if not exists
 pool.query(
   `
@@ -62,7 +60,18 @@ app.get("/read", async (req, res) => {
   }
 });
 
-// Start the server on port 3000
+app.delete("/delete/:id", (req, res) => {
+  const { id } = req.params;
+  pool.query("DELETE FROM items WHERE id = $1", [id], (err) => {
+    if (err) {
+      res.status(500).json({ error: "Error deleting item" });
+    } else {
+      res.status(200).json({ message: "Item deleted!" });
+    }
+  });
+});
+
+//start the server on port 3000
 const PORT = 3000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
