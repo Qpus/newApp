@@ -1,26 +1,37 @@
 import React, { useState } from "react";
+import axios from "axios";
 
 function App() {
-  // State to store the input value and saved items
   const [inputValue, setInputValue] = useState("");
   const [savedItems, setSavedItems] = useState([]);
 
-  // Function to handle the input change
+  const API_URL = "http://107.20.129.158:3000";
+
   const handleInputChange = (e) => {
     setInputValue(e.target.value);
   };
 
-  // Function to save the input value
-  const handleSave = () => {
+  const handleSave = async () => {
     if (inputValue.trim() !== "") {
-      setSavedItems([...savedItems, inputValue]);
-      setInputValue(""); // Reset input field
+      try {
+        const response = await axios.post(`${API_URL}/save`, {
+          item: inputValue,
+        });
+        setSavedItems(response.data.items);
+        setInputValue("");
+      } catch (error) {
+        console.error("Error saving item:", error);
+      }
     }
   };
 
-  // Function to read saved items (you can customize this if you read from storage)
-  const handleRead = () => {
-    alert("Items read successfully!");
+  const handleRead = async () => {
+    try {
+      const response = await axios.get(`${API_URL}/read`);
+      setSavedItems(response.data.items);
+    } catch (error) {
+      console.error("Error reading items:", error);
+    }
   };
 
   return (
