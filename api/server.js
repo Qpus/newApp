@@ -9,8 +9,8 @@ app.use(express.json());
 // Configure the PostgreSQL connection
 const pool = new Pool({
   user: process.env.DB_USER, // RDS master username
-  host: process.env.DB_HOST, // RDS endpoint
-  database: process.env.DB_NAME, // Your PostgreSQL database name
+  host: "mylist.ckoda7e9oezp.us-east-1.rds.amazonaws.com", // RDS endpoint
+  database: "list", // Your PostgreSQL database name
   password: process.env.DB_PASSWORD, // RDS master password
   port: 5432, // PostgreSQL port
 });
