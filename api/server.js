@@ -1,11 +1,14 @@
 const express = require("express");
 const cors = require("cors");
-const { Pool } = require("pg"); // Import PostgreSQL client
+const bodyParser = require("body-parser");
+const { Pool } = require("pg");
+const bcrypt = require("bcrypt");
 
 const app = express();
 app.use(cors());
-app.use(express.json());
+app.use(bodyParser.json());
 
+// Set up PostgreSQL connection
 const pool = new Pool({
   user: process.env.DB_USER,
   host: process.env.DB_HOST,
@@ -13,65 +16,135 @@ const pool = new Pool({
   password: process.env.DB_PASSWORD,
   port: 5432,
 });
-// Create table if not exists
+
+// Create users table (run this at server start if the table doesn't exist)
 pool.query(
   `
-  CREATE TABLE IF NOT EXISTS items (
-    id SERIAL PRIMARY KEY,
-    item TEXT NOT NULL
-  )
+    CREATE TABLE IF NOT EXISTS users (
+        id SERIAL PRIMARY KEY,
+        username TEXT UNIQUE NOT NULL,
+        password TEXT NOT NULL
+    );
 `,
-  (err, res) => {
-    if (err) {
-      console.error("Error creating table:", err);
-    } else {
-      console.log("Table created or already exists");
-    }
+  (err) => {
+    if (err) console.error("Error creating users table:", err);
   }
 );
 
-// API route to save an item to PostgreSQL
-app.post("/save", async (req, res) => {
-  const { item } = req.body;
-  if (item) {
-    try {
-      const result = await pool.query(
-        "INSERT INTO items (item) VALUES ($1) RETURNING *",
-        [item]
-      );
-      res.status(201).json({ message: "Item saved!", item: result.rows[0] });
-    } catch (error) {
-      console.error("Error saving item:", error);
-      res.status(500).json({ error: "Error saving item" });
-    }
-  } else {
-    res.status(400).json({ error: "Invalid item" });
+pool.query(
+  `
+    CREATE TABLE IF NOT EXISTS user_items (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER REFERENCES users(id),
+        item TEXT NOT NULL
+    );
+`,
+  (err) => {
+    if (err) console.error("Error creating user_items table:", err);
   }
-});
+);
 
-// API route to read all saved items from PostgreSQL
-app.get("/read", async (req, res) => {
+// API to signup a new user
+app.post("/signup", async (req, res) => {
+  const { username, password } = req.body;
+  const hashedPassword = await bcrypt.hash(password, 10);
+
   try {
-    const result = await pool.query("SELECT * FROM items");
-    res.status(200).json({ items: result.rows });
-  } catch (error) {
-    console.error("Error reading items:", error);
-    res.status(500).json({ error: "Error reading items" });
+    // Store user credentials in the users table
+    const result = await pool.query(
+      `INSERT INTO users (username, password) VALUES ($1, $2) RETURNING id`,
+      [username, hashedPassword]
+    );
+    res.status(201).json({
+      message: "User signed up successfully!",
+      userId: result.rows[0].id,
+    });
+  } catch (err) {
+    console.error("Error during signup:", err);
+    res.status(500).json({ error: "Error signing up user" });
   }
 });
 
+// API to login a user
+app.post("/login", async (req, res) => {
+  const { username, password } = req.body;
+
+  try {
+    // Fetch the user from the database
+    const result = await pool.query("SELECT * FROM users WHERE username = $1", [
+      username,
+    ]);
+    const user = result.rows[0];
+
+    if (!user) {
+      return res.status(401).json({ error: "Invalid username or password" });
+    }
+
+    // Compare passwords
+    const match = await bcrypt.compare(password, user.password);
+    if (!match) {
+      return res.status(401).json({ error: "Invalid username or password" });
+    }
+
+    // Successfully logged in
+    res.status(200).json({ message: "Login successful!", userId: user.id });
+  } catch (err) {
+    console.error("Error during login:", err);
+    res.status(500).json({ error: "Error logging in" });
+  }
+});
+
+// API to save an item
+app.post("/save", (req, res) => {
+  const { item, userId } = req.body; // Assume userId is being passed from the frontend after login
+
+  pool.query(
+    "INSERT INTO user_items (user_id, item) VALUES ($1, $2)",
+    [userId, item],
+    (err) => {
+      if (err) {
+        console.error("Error saving item:", err);
+        res.status(500).json({ error: "Error saving item" });
+      } else {
+        res.status(201).json({ message: "Item saved successfully!" });
+      }
+    }
+  );
+});
+
+// API to read items
+app.get("/read", (req, res) => {
+  const { userId } = req.query; // Assume userId is passed from the frontend as a query parameter
+
+  pool.query(
+    "SELECT * FROM user_items WHERE user_id = $1",
+    [userId],
+    (err, results) => {
+      if (err) {
+        console.error("Error reading items:", err);
+        res.status(500).json({ error: "Error reading items" });
+      } else {
+        res.status(200).json(results.rows);
+      }
+    }
+  );
+});
+
+// API to delete an item
 app.delete("/delete/:id", (req, res) => {
   const { id } = req.params;
-  pool.query("DELETE FROM items WHERE id = $1", [id], (err) => {
+
+  pool.query("DELETE FROM user_items WHERE id = $1", [id], (err) => {
     if (err) {
+      console.error("Error deleting item:", err);
       res.status(500).json({ error: "Error deleting item" });
     } else {
-      res.status(200).json({ message: "Item deleted!" });
+      res.status(200).json({ message: "Item deleted successfully!" });
     }
   });
 });
 
-//start the server on port 3000
+// Start server
 const PORT = 3000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
