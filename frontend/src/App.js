@@ -54,20 +54,14 @@ const App = () => {
   };
 
   const handleDelete = async (id) => {
-    if (userId) {
-      try {
-        await fetch(`http://107.20.129.158:3000/delete/${id}`, {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-            userId: userId, // Include userId in the headers
-          },
-        });
-        // Update state to remove the deleted item from the list
-        setSavedItems(savedItems.filter((item) => item.id !== id));
-      } catch (error) {
-        console.error("Error deleting item:", error);
-      }
+    try {
+      await fetch(`http://107.20.129.158:3000/delete/${id}`, {
+        method: "DELETE",
+      });
+      // Update state to remove the deleted item from the list
+      setSavedItems(savedItems.filter((item) => item.id !== id));
+    } catch (error) {
+      console.error("Error deleting item:", error);
     }
   };
 

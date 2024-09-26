@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import "./App.css";
 
 const MainApp = ({ loggedInUser }) => {
   const [savedItems, setSavedItems] = useState([]);
@@ -10,6 +11,9 @@ const MainApp = ({ loggedInUser }) => {
       const response = await fetch(
         `http://107.20.129.158:3000/read/${loggedInUser}`
       );
+      if (!response.ok) {
+        throw new Error("Failed to fetch items");
+      }
       const data = await response.json();
       setSavedItems(data);
     } catch (error) {
@@ -28,6 +32,10 @@ const MainApp = ({ loggedInUser }) => {
         body: JSON.stringify({ item: newItem, username: loggedInUser }),
       });
 
+      if (!response.ok) {
+        throw new Error("Failed to save item");
+      }
+
       setNewItem("");
       fetchItems(); // Refresh the list after saving
     } catch (error) {
@@ -38,9 +46,16 @@ const MainApp = ({ loggedInUser }) => {
   // Handle deleting an item
   const handleDelete = async (id) => {
     try {
-      await fetch(`http://107.20.129.158:3000/delete/${id}/${loggedInUser}`, {
-        method: "DELETE",
-      });
+      const response = await fetch(
+        `http://107.20.129.158:3000/delete/${id}/${loggedInUser}`,
+        {
+          method: "DELETE",
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to delete item");
+      }
 
       setSavedItems(savedItems.filter((item) => item.id !== id));
     } catch (error) {
@@ -51,20 +66,18 @@ const MainApp = ({ loggedInUser }) => {
   // Fetch items when the component mounts
   useEffect(() => {
     fetchItems();
-  }, []);
+  }, []); // Empty dependency array means this runs once on mount
 
   return (
-    <div>
+    <div className="app">
       <h1>{loggedInUser}'s Items</h1>
       <input
         type="text"
         value={newItem}
         onChange={(e) => setNewItem(e.target.value)}
-        placeholder="Enter a new item"
+        placeholder="Add a new item"
       />
-      <button onClick={handleSave}>Save Item</button>
-
-      <h2>Saved Items</h2>
+      <button onClick={handleSave}>Save</button>
       <ul>
         {savedItems.map((item) => (
           <li key={item.id}>

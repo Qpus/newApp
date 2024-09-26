@@ -10,10 +10,10 @@ app.use(bodyParser.json());
 
 // Set up PostgreSQL connection
 const pool = new Pool({
-  user: process.env.DB_USER,
-  host: process.env.DB_HOST,
-  database: process.env.DB_NAME,
-  password: process.env.DB_PASSWORD,
+  host: "your host",
+  user: "database username",
+  password: "database pass",
+  database: "database name", // Single database for all users
   port: 5432,
 });
 
@@ -44,21 +44,28 @@ pool.query(
   }
 );
 
-// API to signup a new user
+//API to signup user
 app.post("/signup", async (req, res) => {
   const { username, password } = req.body;
-  const hashedPassword = await bcrypt.hash(password, 10);
+
+  if (!username || !password) {
+    return res
+      .status(400)
+      .json({ error: "Username and password are required." });
+  }
 
   try {
-    // Store user credentials in the users table
-    const result = await pool.query(
-      `INSERT INTO users (username, password) VALUES ($1, $2) RETURNING id`,
-      [username, hashedPassword]
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    await pool.query(
+      `CREATE TABLE IF NOT EXISTS users (id SERIAL PRIMARY KEY, username TEXT UNIQUE, password TEXT)`
     );
-    res.status(201).json({
-      message: "User signed up successfully!",
-      userId: result.rows[0].id,
-    });
+    await pool.query(`INSERT INTO users (username, password) VALUES ($1, $2)`, [
+      username,
+      hashedPassword,
+    ]);
+
+    res.status(201).json({ message: "User signed up successfully!" });
   } catch (err) {
     console.error("Error during signup:", err);
     res.status(500).json({ error: "Error signing up user" });
