@@ -3,16 +3,16 @@ body {
   font-family: "Arial", sans-serif;
   background-color: #121212; /* Dark background */
   color: #f9f9f9; /* Light text color */
-  height: 100vh; /* Make body take full height of the viewport */
+  height: 100vh; /* Full height of the viewport */
   display: flex;
-  justify-content: center;
-  align-items: center;
+  justify-content: center; /* Horizontally center the app */
+  align-items: flex-start; /* Align the app to the top */
 }
 
 .App {
   max-width: 600px;
   width: 100%;
-  margin: auto;
+  margin: 50px 0; /* Push the app down from the top */
   padding: 20px;
   background-color: #1e1e1e; /* Slightly lighter dark background for the container */
   border-radius: 10px;
