@@ -15,7 +15,7 @@ const App = () => {
   const [inputValue, setInputValue] = useState("");
   const [savedItems, setSavedItems] = useState([]);
 
-  const API_URL = "https://107.20.129.158:3000";
+  const API_URL = "http://107.20.129.158:3000";
 
   const handleInputChange = (e) => {
     setInputValue(e.target.value);
@@ -55,7 +55,7 @@ const App = () => {
 
   const handleDelete = async (id) => {
     try {
-      await fetch(`https://107.20.129.158:3000/delete/${id}`, {
+      await fetch(`${API_URL}/delete/${id}`, {
         method: "DELETE",
       });
       // Update state to remove the deleted item from the list
