@@ -1,0 +1,35 @@
+name: Deploy to AWS S3
+on:
+  push:
+    branches:
+      - development
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+
+      - name: NodeJs Setup
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ secrets.node_version }}
+
+      - name: Dependency Installation
+        working-directory: ./frontend
+        run: npm install
+
+      - name: App Build
+        working-directory: ./frontend
+        run: npm run build
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_KEY }}
+          aws-region: us-east-1
+
+      - name: Depoly to AWS S3
+        run: aws s3 sync ./frontend/build s3://readwrittereactapp --delete

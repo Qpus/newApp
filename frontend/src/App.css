@@ -1,29 +1,29 @@
-/* App.css */
-
 body {
   margin: 0;
   font-family: "Arial", sans-serif;
   background-color: #121212; /* Dark background */
   color: #f9f9f9; /* Light text color */
+  height: 100vh; /* Full height of the viewport */
+  display: flex;
+  justify-content: center; /* Horizontally center the app */
+  align-items: flex-start; /* Align the app to the top */
 }
 
-/* Center the app content */
 .App {
   max-width: 600px;
-  margin: 50px auto;
+  width: 100%;
+  margin: 50px 0; /* Push the app down from the top */
   padding: 20px;
   background-color: #1e1e1e; /* Slightly lighter dark background for the container */
   border-radius: 10px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  text-align: center; /* Center all text and form elements */
 }
 
-/* Title style */
 h1 {
   color: #ffcc00; /* Bright yellow for the title */
-  text-align: center;
 }
 
-/* Input field style */
 input {
   width: calc(100% - 24px); /* Full width minus padding */
   padding: 10px;
@@ -32,12 +32,11 @@ input {
   background-color: #2a2a2a; /* Dark input background */
   color: #f9f9f9; /* Light text color */
   font-size: 16px;
+  margin-bottom: 10px; /* Add space between input and buttons */
 }
 
-/* Button styles */
 button {
   margin-top: 10px;
-  margin-left: 10px;
   padding: 10px 15px;
   border: none;
   border-radius: 5px;
@@ -46,20 +45,19 @@ button {
   font-size: 16px;
   cursor: pointer;
   transition: background-color 0.3s;
+  margin-left: 5px;
 }
 
-/* Button hover effect */
 button:hover {
   background-color: #e6b800; /* Darker yellow on hover */
 }
 
-/* List item style */
 ul {
   list-style-type: none; /* Remove default list styling */
   padding: 0;
+  margin: 20px 0;
 }
 
-/* Each list item */
 li {
   display: flex;
   justify-content: space-between;
@@ -70,9 +68,9 @@ li {
   border-radius: 5px;
 }
 
-/* Delete button style */
 li button {
   background-color: #ff4d4d; /* Red background for delete button */
+  margin-left: 10px;
 }
 
 li button:hover {
