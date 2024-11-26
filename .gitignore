@@ -2,3 +2,6 @@
 /frontend/node_modules
 /api/node_modules
 /frontend/build
+.terraform
+.terraform.lock.hcl
+terraform.tfstate
